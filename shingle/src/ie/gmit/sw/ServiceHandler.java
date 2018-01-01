@@ -1,6 +1,8 @@
 package ie.gmit.sw;
 
 import java.io.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -14,13 +16,14 @@ import javax.servlet.annotation.*;
         maxRequestSize=1024*1024*50)   // 50MB. he maximum size allowed for a multipart/form-data request, in bytes.
 public class ServiceHandler extends HttpServlet {
     /* Declare any shared objects here. For example any of the following can be handled from
-     * this context by instantiating them at a servlet level:
-     *   1) An Asynchronous Message Facade: declare the IN and OUT queues or MessageQueue
-     *   2) An Chain of Responsibility: declare the initial handler or a full chain object
-     *   1) A Proxy: Declare a shared proxy here and a request proxy inside doGet()
-     */
+         * this context by instantiating them at a servlet level:
+         *   1) An Asynchronous Message Facade: declare the IN and OUT queues or MessageQueue
+         *   2) An Chain of Responsibility: declare the initial handler or a full chain object
+         *   1) A Proxy: Declare a shared proxy here and a request proxy inside doGet()
+         */
     private String environmentalVariable = null; //Demo purposes only. Rename this variable to something more appropriate
     private static long jobNumber = 0;
+    private static int SHINGLE_SIZE; // shingle size defined in web.xml
 
 
     /* This method is only called once, when the servlet is first started (like a constructor).
@@ -34,6 +37,7 @@ public class ServiceHandler extends HttpServlet {
         //Reads the value from the <context-param> in web.xml. Any application scope variables
         //defined in the web.xml can be read in as follows:
         environmentalVariable = ctx.getInitParameter("SOME_GLOBAL_OR_ENVIRONMENTAL_VARIABLE");
+        SHINGLE_SIZE = Integer.parseInt(ctx.getInitParameter("SHINGLE_SIZE"));
     }
 
 
@@ -127,7 +131,8 @@ public class ServiceHandler extends HttpServlet {
         out.print("<h3>Uploaded Document</h3>");
         out.print("<font color=\"0000ff\">");
         BufferedReader br = new BufferedReader(new InputStreamReader(part.getInputStream()));
-        // store all words from the file
+
+        // store all words to a string array from the file
         StringBuffer buffer = new StringBuffer();
         String line = null;
         while ((line = br.readLine()) != null) {
@@ -135,7 +140,28 @@ public class ServiceHandler extends HttpServlet {
         }
         // use regex to get words, and store in a String array
         String txt = buffer.toString().replaceAll("[^a-zA-Z]", " ");
+        txt = txt.replaceAll("\\s{2,}", " ");
         String [] words = txt.split(" ");
+
+
+        // get shingles (3 words)
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < words.length/SHINGLE_SIZE; i++) {
+            for (int j = 0; j < SHINGLE_SIZE; j++) {
+                sb.append(words[SHINGLE_SIZE*i+j]);
+            }
+            Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
+            sb.delete( 0, sb.length() );
+            System.out.println("");
+        }
+        if(words.length%SHINGLE_SIZE >= 1){
+            sb.append(words[words.length-1]);
+            if(words.length%SHINGLE_SIZE == 2){
+                sb.append(words[words.length-2]);
+            }
+            Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
+            sb.delete( 0, sb.length() );
+        }
 
         for (String w : words){
             out.print(w+" ");
