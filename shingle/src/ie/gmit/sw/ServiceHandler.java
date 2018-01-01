@@ -3,6 +3,8 @@ package ie.gmit.sw;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.BlockingQueue;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -131,41 +133,44 @@ public class ServiceHandler extends HttpServlet {
         out.print("<h3>Uploaded Document</h3>");
         out.print("<font color=\"0000ff\">");
         BufferedReader br = new BufferedReader(new InputStreamReader(part.getInputStream()));
-
-        // store all words to a string array from the file
         StringBuffer buffer = new StringBuffer();
         String line = null;
+        // store txt to the StringBuffer
         while ((line = br.readLine()) != null) {
             buffer.append(line);
         }
-        // use regex to get words, and store in a String array
-        String txt = buffer.toString().replaceAll("[^a-zA-Z]", " ");
-        txt = txt.replaceAll("\\s{2,}", " ");
-        String [] words = txt.split(" ");
+        ShingleRequestPara para = new ShingleRequestPara();
+        para.setStringBuffer(buffer);
+        para.setShingleSize(SHINGLE_SIZE);
+        try {
+            // create getEngWords and getShingleBlockingQueue requests
+            ShingleRequest r1 = new ShingleRequest(ShingleRequest.getEngWords);
+            ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleBlockingQueue);
+            // create handler
+            ShingleHandler h = new PreShingleHandler();
+            // handle requests
+            String words = h.handleShingle(r1,para).toString();
+            String[] engWords = words.split(" ");
+            para.setWords(engWords);
+            BlockingQueue<Shingle> bq = (BlockingQueue<Shingle>) h.handleShingle(r2,para);
 
 
-        // get shingles (3 words)
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < words.length/SHINGLE_SIZE; i++) {
-            for (int j = 0; j < SHINGLE_SIZE; j++) {
-                sb.append(words[SHINGLE_SIZE*i+j]);
+            for (String w : engWords){
+                out.print(w+" ");
             }
-            Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
-            sb.delete( 0, sb.length() );
-            System.out.println("");
-        }
-        if(words.length%SHINGLE_SIZE >= 1){
-            sb.append(words[words.length-1]);
-            if(words.length%SHINGLE_SIZE == 2){
-                sb.append(words[words.length-2]);
+            for (Shingle w : bq){
+              out.print(w.getHashcode()+" ");
             }
-            Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
-            sb.delete( 0, sb.length() );
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        for (String w : words){
-            out.print(w+" ");
-        }
+
+
+
+//        for (String w : words){
+//            out.print(w+" ");
+//        }
 
         out.print("</font>");
     }
