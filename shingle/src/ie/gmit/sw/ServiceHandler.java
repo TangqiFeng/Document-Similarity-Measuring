@@ -127,13 +127,20 @@ public class ServiceHandler extends HttpServlet {
         out.print("<h3>Uploaded Document</h3>");
         out.print("<font color=\"0000ff\">");
         BufferedReader br = new BufferedReader(new InputStreamReader(part.getInputStream()));
+        // store all words from the file
+        StringBuffer buffer = new StringBuffer();
         String line = null;
         while ((line = br.readLine()) != null) {
-            //Break each line up into shingles and do something. The servlet really should act as a
-            //contoller and dispatch this task to something else... Divide and conquer...! I've been
-            //telling you all this since 2nd year...!
-            out.print(line);
+            buffer.append(line);
         }
+        // use regex to get words, and store in a String array
+        String txt = buffer.toString().replaceAll("[^a-zA-Z]", " ");
+        String [] words = txt.split(" ");
+
+        for (String w : words){
+            out.print(w+" ");
+        }
+
         out.print("</font>");
     }
 
