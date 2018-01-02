@@ -21,6 +21,11 @@
   </context-param>
 
   <context-param>
+    <param-name>INQUEUE_SIZE</param-name>
+    <param-value>10</param-value>
+  </context-param>
+
+  <context-param>
     <param-name>SHINGLE_SIZE</param-name>
     <param-value>3</param-value>
   </context-param>

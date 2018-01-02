@@ -16,7 +16,7 @@ public class PreShingleHandler implements ShingleHandler {
             // could have more cases here
             // e.g. getChineseWords, getJapanWords etc.
 
-            case ShingleRequest.getShingleArrayList:
+            case ShingleRequest.getShingleBlockingQueue:
                 return new GenerateShingleHandler().handleShingle(shingleRequest, para);
                 //break;
         }

@@ -16,8 +16,8 @@ public class GenerateShingleHandler implements ShingleHandler {
 
     }
 
-    private ArrayList<Shingle> getShingles(String[] words, int shingleSize) throws InterruptedException {
-        ArrayList<Shingle> shingles = new ArrayList<>();
+    private BlockingQueue<Shingle> getShingles(String[] words, int shingleSize) throws InterruptedException {
+        BlockingQueue<Shingle> shingles = new LinkedBlockingDeque<>();
         // get shingles (3 words)
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < words.length/shingleSize; i++) {
@@ -26,7 +26,7 @@ public class GenerateShingleHandler implements ShingleHandler {
             }
             Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
             sb.delete( 0, sb.length() );
-            shingles.add(s);
+            shingles.put(s);
         }
         // rest one or two words also save to a shingle
         if(words.length%shingleSize >= 1){
@@ -36,7 +36,7 @@ public class GenerateShingleHandler implements ShingleHandler {
             }
             Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
             sb.delete( 0, sb.length() );
-            shingles.add(s);
+            shingles.put(s);
         }
         return shingles;
 

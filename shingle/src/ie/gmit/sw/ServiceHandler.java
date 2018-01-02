@@ -4,7 +4,10 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -24,8 +27,12 @@ public class ServiceHandler extends HttpServlet {
          *   1) A Proxy: Declare a shared proxy here and a request proxy inside doGet()
          */
     private String environmentalVariable = null; //Demo purposes only. Rename this variable to something more appropriate
-    private static long jobNumber = 0;
+    private static long jobNumber = 0; // default job number
     private static int SHINGLE_SIZE; // shingle size defined in web.xml
+    private static int INQUEUE_SIZE; // in_queue size defined in web.xml
+
+    //bolocking queue, used to store in-queue
+    private BlockingQueue<Job> in_queue;
 
 
     /* This method is only called once, when the servlet is first started (like a constructor).
@@ -40,6 +47,9 @@ public class ServiceHandler extends HttpServlet {
         //defined in the web.xml can be read in as follows:
         environmentalVariable = ctx.getInitParameter("SOME_GLOBAL_OR_ENVIRONMENTAL_VARIABLE");
         SHINGLE_SIZE = Integer.parseInt(ctx.getInitParameter("SHINGLE_SIZE"));
+        INQUEUE_SIZE = Integer.parseInt(ctx.getInitParameter("INQUEUE_SIZE"));
+        in_queue = new LinkedBlockingDeque<Job>(INQUEUE_SIZE);
+
     }
 
 
@@ -70,23 +80,48 @@ public class ServiceHandler extends HttpServlet {
         out.print("<html><head><title>A JEE Application for Measuring Document Similarity</title>");
         out.print("</head>");
         out.print("<body>");
-
+        //Output some headings at the top of the generated page
+        out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
+        out.print("<H3>Document Title: " + title + "</H3>");
+        out.print("<h3>Uploaded Document Content</h3>");
+        out.print("<font color=\"0000ff\">");
         //We could use the following to track asynchronous tasks. Comment it out otherwise...
         if (taskNumber == null){
             taskNumber = new String("T" + jobNumber);
             jobNumber++;
-            //Add job to in-queue
+            Job job = new Job(taskNumber,title);
+            /* File Upload: The following few lines read the multipart/form-data from an instance of the
+            * interface Part that is accessed by Part part = req.getPart("txtDocument"). We can read
+            * bytes or arrays of bytes by calling read() on the InputStream of the Part object. In this
+            * case, we are only interested in text files, so it's as easy to buffer the bytes as characters
+            * to enable the servlet to read the uploaded file line-by-line. Note that the uplaod action
+            * can be easily completed by writing the file to disk if necessary. The following lines just
+            * read the document from memory... this might not be a good idea if the file size is large! */
+            BufferedReader br = new BufferedReader(new InputStreamReader(part.getInputStream()));
+            StringBuffer buffer = new StringBuffer();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                buffer.append(line);
+            }
+            out.print(buffer.toString()); // print txt content
+            try {
+                // get shingles from StringBuffer and save to job
+                job.setShingles(getShingles(buffer));
+                //Add job to in-queue
+                in_queue.put(job);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            for (Shingle w : job.getShingles()){
+                out.print(w.getHashcode()+" ");
+            }
         }else{
             RequestDispatcher dispatcher = req.getRequestDispatcher("/poll");
             dispatcher.forward(req,resp);
             //Check out-queue for finished job with the given taskNumber
         }
 
-        //Output some headings at the top of the generated page
-        out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
-        out.print("<H3>Document Title: " + title + "</H3>");
-
-
+        out.print("</font>");
         //Output some useful information for you (yes YOU!)
         out.print("<div id=\"r\"></div>");
         out.print("<font color=\"#993333\"><b>");
@@ -122,60 +157,28 @@ public class ServiceHandler extends HttpServlet {
 
 
 
-		/* File Upload: The following few lines read the multipart/form-data from an instance of the
-		 * interface Part that is accessed by Part part = req.getPart("txtDocument"). We can read
-		 * bytes or arrays of bytes by calling read() on the InputStream of the Part object. In this
-		 * case, we are only interested in text files, so it's as easy to buffer the bytes as characters
-		 * to enable the servlet to read the uploaded file line-by-line. Note that the uplaod action
-		 * can be easily completed by writing the file to disk if necessary. The following lines just
-		 * read the document from memory... this might not be a good idea if the file size is large!
-		 */
-        out.print("<h3>Uploaded Document</h3>");
-        out.print("<font color=\"0000ff\">");
-        BufferedReader br = new BufferedReader(new InputStreamReader(part.getInputStream()));
-        StringBuffer buffer = new StringBuffer();
-        String line = null;
-        // store txt to the StringBuffer
-        while ((line = br.readLine()) != null) {
-            buffer.append(line);
-        }
-        ShingleRequestPara para = new ShingleRequestPara();
-        para.setStringBuffer(buffer);
-        para.setShingleSize(SHINGLE_SIZE);
-        try {
-            // create getEngWords and getShingleBlockingQueue requests
-            ShingleRequest r1 = new ShingleRequest(ShingleRequest.getEngWords);
-            ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleArrayList);
-            // create handler
-            ShingleHandler h = new PreShingleHandler();
-            // handle requests
-            String words = h.handleShingle(r1,para).toString();
-            String[] engWords = words.split(" ");
-            para.setWords(engWords);
-            ArrayList<Shingle> bq = (ArrayList<Shingle>) h.handleShingle(r2,para);
 
-
-            for (String w : engWords){
-                out.print(w+" ");
-            }
-            for (Shingle w : bq){
-              out.print(w.getHashcode()+" ");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-
-
-//        for (String w : words){
-//            out.print(w+" ");
-//        }
-
-        out.print("</font>");
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doGet(req, resp);
+    }
+
+    // get shingles from StringBuffer
+    private BlockingQueue<Shingle> getShingles(StringBuffer buffer) throws Exception {
+        ShingleRequestPara para = new ShingleRequestPara();
+        para.setStringBuffer(buffer);
+        para.setShingleSize(SHINGLE_SIZE);
+        // create getEngWords and getShingleBlockingQueue requests
+        ShingleRequest r1 = new ShingleRequest(ShingleRequest.getEngWords);
+        ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleBlockingQueue);
+        // create handler
+        ShingleHandler h = new PreShingleHandler();
+        // handle requests
+        String words = h.handleShingle(r1,para).toString();
+        String[] engWords = words.split(" ");
+        para.setWords(engWords);
+        return  (BlockingQueue<Shingle>) h.handleShingle(r2,para);
+
     }
 }
