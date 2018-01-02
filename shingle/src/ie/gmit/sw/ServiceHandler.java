@@ -145,14 +145,14 @@ public class ServiceHandler extends HttpServlet {
         try {
             // create getEngWords and getShingleBlockingQueue requests
             ShingleRequest r1 = new ShingleRequest(ShingleRequest.getEngWords);
-            ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleBlockingQueue);
+            ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleArrayList);
             // create handler
             ShingleHandler h = new PreShingleHandler();
             // handle requests
             String words = h.handleShingle(r1,para).toString();
             String[] engWords = words.split(" ");
             para.setWords(engWords);
-            BlockingQueue<Shingle> bq = (BlockingQueue<Shingle>) h.handleShingle(r2,para);
+            ArrayList<Shingle> bq = (ArrayList<Shingle>) h.handleShingle(r2,para);
 
 
             for (String w : engWords){

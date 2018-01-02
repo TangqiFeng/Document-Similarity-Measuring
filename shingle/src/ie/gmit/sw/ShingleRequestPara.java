@@ -3,9 +3,9 @@ package ie.gmit.sw;
 import java.io.BufferedReader;
 
 public class ShingleRequestPara {
-    String[] words;
-    int shingleSize;
-    StringBuffer sb;
+    private String[] words;
+    private int shingleSize;
+    private StringBuffer sb;
 
     public ShingleRequestPara() {
     }
