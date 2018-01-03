@@ -115,7 +115,14 @@ public class ServiceHandler extends HttpServlet {
             job.setShingles(getShingles(buffer));
             //Add job to in-queue
             in_queue.put(job);
-            calculate();
+            new Thread(() -> {
+                try {
+                    calculate();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            //calculate();
 
         } catch (Exception e) {
             e.printStackTrace();
