@@ -1,16 +1,10 @@
 package ie.gmit.sw;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 public class ServicePollHandler extends HttpServlet {
-
-    //map<taskNumber, result>, used to store out-queue
-    private Map<String,String> out_queue = new HashMap<>();
-
     public void init() throws ServletException {
         ServletContext ctx = getServletContext();
     }

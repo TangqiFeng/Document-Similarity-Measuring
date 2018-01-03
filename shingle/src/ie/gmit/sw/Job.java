@@ -1,6 +1,6 @@
 package ie.gmit.sw;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.ArrayList;
 
 /*
 this is the bean class, stores job object
@@ -9,7 +9,7 @@ public class Job {
     private String taskNumber;
     private String docTitle;
     private String result;
-    private BlockingQueue<Shingle> shingles;
+    private ArrayList<Shingle> shingles;
 
     public Job() {
     }
@@ -43,11 +43,11 @@ public class Job {
         this.result = result;
     }
 
-    public BlockingQueue<Shingle> getShingles() {
+    public ArrayList<Shingle> getShingles() {
         return shingles;
     }
 
-    public void setShingles(BlockingQueue<Shingle> shingles) {
+    public void setShingles(ArrayList<Shingle> shingles) {
         this.shingles = shingles;
     }
 }

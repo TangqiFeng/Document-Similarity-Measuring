@@ -9,15 +9,15 @@ public class GenerateShingleHandler implements ShingleHandler {
     @Override
     public Object handleShingle(ShingleRequest shingleRequest, ShingleRequestPara para) throws Exception {
         // implement further chaining if required doRequest();
-        // e.g. return List<Shingle> etc.
+        // e.g. return List<Shingle>, BlockingQueue<> etc.
 
         // this method return shingles in a blocking queue
         return getShingles(para.getWords(),para.getShingleSize());
 
     }
 
-    private BlockingQueue<Shingle> getShingles(String[] words, int shingleSize) throws InterruptedException {
-        BlockingQueue<Shingle> shingles = new LinkedBlockingDeque<>();
+    private ArrayList<Shingle> getShingles(String[] words, int shingleSize) throws InterruptedException {
+        ArrayList<Shingle> shingles = new ArrayList<>();
         // get shingles (3 words)
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < words.length/shingleSize; i++) {
@@ -26,7 +26,7 @@ public class GenerateShingleHandler implements ShingleHandler {
             }
             Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
             sb.delete( 0, sb.length() );
-            shingles.put(s);
+            shingles.add(s);
         }
         // rest one or two words also save to a shingle
         if(words.length%shingleSize >= 1){
@@ -36,7 +36,7 @@ public class GenerateShingleHandler implements ShingleHandler {
             }
             Shingle s = new Shingle(0,sb.toString().toLowerCase().hashCode());
             sb.delete( 0, sb.length() );
-            shingles.put(s);
+            shingles.add(s);
         }
         return shingles;
 

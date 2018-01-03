@@ -2,10 +2,8 @@ package ie.gmit.sw;
 
 import java.io.*;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import javax.servlet.*;
@@ -33,6 +31,8 @@ public class ServiceHandler extends HttpServlet {
 
     //bolocking queue, used to store in-queue
     private BlockingQueue<Job> in_queue;
+    //map<taskNumber, result>, used to store out-queue
+    private static Map<String,String> out_queue = new HashMap<>();
 
 
     /* This method is only called once, when the servlet is first started (like a constructor).
@@ -80,46 +80,52 @@ public class ServiceHandler extends HttpServlet {
         out.print("<html><head><title>A JEE Application for Measuring Document Similarity</title>");
         out.print("</head>");
         out.print("<body>");
-        //Output some headings at the top of the generated page
-        out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
-        out.print("<H3>Document Title: " + title + "</H3>");
-        out.print("<h3>Uploaded Document Content</h3>");
-        out.print("<font color=\"0000ff\">");
         //We could use the following to track asynchronous tasks. Comment it out otherwise...
         if (taskNumber == null){
             taskNumber = new String("T" + jobNumber);
             jobNumber++;
-            Job job = new Job(taskNumber,title);
-            /* File Upload: The following few lines read the multipart/form-data from an instance of the
-            * interface Part that is accessed by Part part = req.getPart("txtDocument"). We can read
-            * bytes or arrays of bytes by calling read() on the InputStream of the Part object. In this
-            * case, we are only interested in text files, so it's as easy to buffer the bytes as characters
-            * to enable the servlet to read the uploaded file line-by-line. Note that the uplaod action
-            * can be easily completed by writing the file to disk if necessary. The following lines just
-            * read the document from memory... this might not be a good idea if the file size is large! */
-            BufferedReader br = new BufferedReader(new InputStreamReader(part.getInputStream()));
-            StringBuffer buffer = new StringBuffer();
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                buffer.append(line);
-            }
-            out.print(buffer.toString()); // print txt content
-            try {
-                // get shingles from StringBuffer and save to job
-                job.setShingles(getShingles(buffer));
-                //Add job to in-queue
-                in_queue.put(job);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            for (Shingle w : job.getShingles()){
-                out.print(w.getHashcode()+" ");
-            }
         }else{
             RequestDispatcher dispatcher = req.getRequestDispatcher("/poll");
             dispatcher.forward(req,resp);
             //Check out-queue for finished job with the given taskNumber
         }
+        //Output some headings at the top of the generated page
+        out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
+        out.print("<H3>Document Title: " + title + "</H3>");
+        //Output doc content
+        out.print("<h3>Uploaded Document Content</h3>");
+        out.print("<font color=\"0000ff\">");
+        Job job = new Job(taskNumber,title);
+        /* File Upload: The following few lines read the multipart/form-data from an instance of the
+        * interface Part that is accessed by Part part = req.getPart("txtDocument"). We can read
+        * bytes or arrays of bytes by calling read() on the InputStream of the Part object. In this
+        * case, we are only interested in text files, so it's as easy to buffer the bytes as characters
+        * to enable the servlet to read the uploaded file line-by-line. Note that the uplaod action
+        * can be easily completed by writing the file to disk if necessary. The following lines just
+        * read the document from memory... this might not be a good idea if the file size is large! */
+        BufferedReader br = new BufferedReader(new InputStreamReader(part.getInputStream()));
+        StringBuffer buffer = new StringBuffer();
+        String line = null;
+        while ((line = br.readLine()) != null) {
+            buffer.append(line);
+        }
+        out.print(buffer.toString()); // print txt content
+        try {
+            // get shingles from StringBuffer and save to job
+            job.setShingles(getShingles(buffer));
+            //Add job to in-queue
+            in_queue.put(job);
+            calculate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (Shingle w : job.getShingles()){
+            out.print(w.getHashcode()+" ");
+        }
+
+
+
 
         out.print("</font>");
         //Output some useful information for you (yes YOU!)
@@ -165,20 +171,45 @@ public class ServiceHandler extends HttpServlet {
     }
 
     // get shingles from StringBuffer
-    private BlockingQueue<Shingle> getShingles(StringBuffer buffer) throws Exception {
+    private ArrayList<Shingle> getShingles(StringBuffer buffer) throws Exception {
         ShingleRequestPara para = new ShingleRequestPara();
         para.setStringBuffer(buffer);
         para.setShingleSize(SHINGLE_SIZE);
         // create getEngWords and getShingleBlockingQueue requests
         ShingleRequest r1 = new ShingleRequest(ShingleRequest.getEngWords);
-        ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleBlockingQueue);
+        ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleArrayList);
         // create handler
         ShingleHandler h = new PreShingleHandler();
         // handle requests
         String words = h.handleShingle(r1,para).toString();
         String[] engWords = words.split(" ");
         para.setWords(engWords);
-        return  (BlockingQueue<Shingle>) h.handleShingle(r2,para);
+        return  (ArrayList<Shingle>) h.handleShingle(r2,para);
+    }
 
+    private void calculate() throws InterruptedException {
+        Job job = in_queue.take();
+        Set in_set = new TreeSet();
+        job.getShingles().forEach((s)->in_set.add(s.getHashcode()));
+        Set db_set = getShinglesFromDB();
+        Set n = new TreeSet(in_set);
+        n.retainAll(db_set);
+        double jaccardValue =  n.size() / (in_set.size() + db_set.size() - n.size()) * 1.0;
+        DecimalFormat df = new DecimalFormat("0.00");
+        System.out.println("reselt：" + df.format(jaccardValue));
+        System.out.println("");
+
+
+
+    }
+
+    private Set getShinglesFromDB(){
+        // at this moment skip DB stuff
+        Set set = new TreeSet();
+        set.add(-761363859);
+        set.add(1650764645);
+        set.add(239957193);
+        set.add(110251550);
+        return set;
     }
 }
