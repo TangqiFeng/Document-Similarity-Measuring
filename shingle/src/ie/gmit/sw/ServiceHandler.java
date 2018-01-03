@@ -34,6 +34,10 @@ public class ServiceHandler extends HttpServlet {
     // HashMap is not thread save, I use ConcurrentHashMap, but I do not think it is absolute save ...
     private static Map<String,Double> out_queue = new ConcurrentHashMap<>();
 
+    ShingleRequestPara para = new ShingleRequestPara();
+    // create handler
+    ShingleHandler h = new PreShingleHandler();
+
 
     /* This method is only called once, when the servlet is first started (like a constructor).
      * It's the Template Patten in action! Any application-wide variables should be initialised
@@ -115,24 +119,22 @@ public class ServiceHandler extends HttpServlet {
             job.setShingles(getShingles(buffer));
             //Add job to in-queue
             in_queue.put(job);
+            // lambda expression to start a thread
             new Thread(() -> {
                 try {
                     calculate();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }).start();
-            //calculate();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
         for (Shingle w : job.getShingles()){
             out.print(w.getHashcode()+" ");
         }
-
-
-
 
         out.print("</font>");
         //Output some useful information for you (yes YOU!)
@@ -168,25 +170,21 @@ public class ServiceHandler extends HttpServlet {
         out.print("var wait=setTimeout(\"document.frmRequestDetails.submit();\", 10000);"); //Refresh every 10 seconds
         out.print("</script>");
 
-
-
-
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doGet(req, resp);
     }
 
-    // get shingles from StringBuffer
+    /*
+     get shingles from StringBuffer, return a arrayList<Shingle>
+      */
     private ArrayList<Shingle> getShingles(StringBuffer buffer) throws Exception {
-        ShingleRequestPara para = new ShingleRequestPara();
         para.setStringBuffer(buffer);
         para.setShingleSize(SHINGLE_SIZE);
         // create getEngWords and getShingleBlockingQueue requests
         ShingleRequest r1 = new ShingleRequest(ShingleRequest.getEngWords);
         ShingleRequest r2 = new ShingleRequest(ShingleRequest.getShingleArrayList);
-        // create handler
-        ShingleHandler h = new PreShingleHandler();
         // handle requests
         String words = h.handleShingle(r1,para).toString();
         String[] engWords = words.split(" ");
@@ -194,16 +192,22 @@ public class ServiceHandler extends HttpServlet {
         return  (ArrayList<Shingle>) h.handleShingle(r2,para);
     }
 
-    private void calculate() throws InterruptedException {
+    /*
+     take a job from in queue, calculate it, add to out queue when finished
+     */
+    private void calculate() throws Exception {
+        //take job from in queue
         Job job = in_queue.take();
         Set in_set = new TreeSet();
         job.getShingles().forEach((s)->in_set.add(s.getHashcode()));
-        Set db_set = getShinglesFromDB();
-        Set n = new TreeSet(in_set);
-        n.retainAll(db_set);
-        double jaccardValue =  n.size() / (in_set.size() + db_set.size() - n.size()) * 1.0;
+        para.setIn_set(in_set);
+        para.setOut_set(getShinglesFromDB());
+        // create getJaccardValue requests
+        ShingleRequest r1 = new ShingleRequest(ShingleRequest.getJaccardValue);
+        // handle requests
+        Double jaccardValue = (Double) h.handleShingle(r1,para);
         job.setResult(jaccardValue);
-
+        // add to out queue
         addOutQueue(job);
     }
 
@@ -211,6 +215,7 @@ public class ServiceHandler extends HttpServlet {
     {
         out_queue.put(job.getTaskNumber(),job.getResult());
     }
+
     private Set getShinglesFromDB(){
         // at this moment skip DB stuff
         Set set = new TreeSet();
@@ -221,10 +226,16 @@ public class ServiceHandler extends HttpServlet {
         return set;
     }
 
+    /*
+     static method, can by called by ServicePollHandler to check jobs in out queue
+     */
     protected static Map<String,Double> getOutQueue(){
         return out_queue;
     }
 
+    /*
+     static method, can by called by ServicePollHandler to remove jobs from out queue
+      */
     protected static void removeOutQueue(String key){
         out_queue.remove(key);
     }

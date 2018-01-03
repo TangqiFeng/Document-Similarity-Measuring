@@ -19,6 +19,9 @@ public class PreShingleHandler implements ShingleHandler {
             case ShingleRequest.getShingleArrayList:
                 return new GenerateShingleHandler().handleShingle(shingleRequest, para);
                 //break;
+
+            case ShingleRequest.getJaccardValue:
+                return new CompareShingleHandler().handleShingle(shingleRequest, para);
         }
         return null;
     }
