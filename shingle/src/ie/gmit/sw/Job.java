@@ -8,7 +8,7 @@ this is the bean class, stores job object
 public class Job {
     private String taskNumber;
     private String docTitle;
-    private String result;
+    private Double result;
     private ArrayList<Shingle> shingles;
 
     public Job() {
@@ -35,11 +35,11 @@ public class Job {
         this.docTitle = docTitle;
     }
 
-    public String getResult() {
+    public Double getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public void setResult(Double result) {
         this.result = result;
     }
 

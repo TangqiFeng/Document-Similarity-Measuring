@@ -1,10 +1,9 @@
 package ie.gmit.sw;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -32,7 +31,8 @@ public class ServiceHandler extends HttpServlet {
     //bolocking queue, used to store in-queue
     private BlockingQueue<Job> in_queue;
     //map<taskNumber, result>, used to store out-queue
-    private static Map<String,String> out_queue = new HashMap<>();
+    // HashMap is not thread save, I use ConcurrentHashMap, but I do not think it is absolute save ...
+    private static Map<String,Double> out_queue = new ConcurrentHashMap<>();
 
 
     /* This method is only called once, when the servlet is first started (like a constructor).
@@ -195,14 +195,15 @@ public class ServiceHandler extends HttpServlet {
         Set n = new TreeSet(in_set);
         n.retainAll(db_set);
         double jaccardValue =  n.size() / (in_set.size() + db_set.size() - n.size()) * 1.0;
-        DecimalFormat df = new DecimalFormat("0.00");
-        System.out.println("reselt：" + df.format(jaccardValue));
-        System.out.println("");
+        job.setResult(jaccardValue);
 
-
-
+        addOutQueue(job);
     }
 
+    private void addOutQueue(Job job)
+    {
+        out_queue.put(job.getTaskNumber(),job.getResult());
+    }
     private Set getShinglesFromDB(){
         // at this moment skip DB stuff
         Set set = new TreeSet();
@@ -211,5 +212,13 @@ public class ServiceHandler extends HttpServlet {
         set.add(239957193);
         set.add(110251550);
         return set;
+    }
+
+    protected static Map<String,Double> getOutQueue(){
+        return out_queue;
+    }
+
+    protected static void removeOutQueue(String key){
+        out_queue.remove(key);
     }
 }
