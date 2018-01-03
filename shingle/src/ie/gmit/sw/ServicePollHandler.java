@@ -1,7 +1,6 @@
 package ie.gmit.sw;
 
 import java.io.*;
-import java.text.DecimalFormat;
 import java.util.Map;
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -36,8 +35,7 @@ public class ServicePollHandler extends HttpServlet {
             out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
             out.print("<H3>Document Title: " + title + "</H3>");
             out.print("<b><font color=\"ff0000\">A total of " + counter + " polls have been made for this request.</font></b> ");
-            DecimalFormat df = new DecimalFormat("0.00");
-            out.print("<H3>jaccardValue: " + df.format(result) + "</H3>");
+            out.print("<H3>jaccardValue: " + result*100 + "% </H3>");
             out.print("</body>");
             out.print("</html>");
             return;

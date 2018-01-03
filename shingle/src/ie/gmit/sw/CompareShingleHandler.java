@@ -15,7 +15,7 @@ public class CompareShingleHandler implements ShingleHandler {
         Set n = new TreeSet(in_set);
         n.retainAll(db_set);
         // Jaccard index formula: |A n B| / ( |A| + |B| - |A U B| )
-        double jaccardValue =  n.size() / (in_set.size() + db_set.size() - n.size()) * 1.0;
+        double jaccardValue =  n.size() / (in_set.size() + db_set.size() - n.size() * 1.0);
         return jaccardValue;
     }
 }
