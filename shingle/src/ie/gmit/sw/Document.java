@@ -6,7 +6,6 @@ public class Document {
     private ArrayList<Integer> shingles;
     private int docId;
     private String docTitle;
-    private String dbPath;
 
     public Document(ArrayList<Integer> shingles, int docId, String docTitle) {
         this.shingles = shingles;
@@ -44,13 +43,5 @@ public class Document {
 
     public void setDocTitle(String docTitle) {
         this.docTitle = docTitle;
-    }
-
-    public String getDbPath() {
-        return dbPath;
-    }
-
-    public void setDbPath(String dbPath) {
-        this.dbPath = dbPath;
     }
 }

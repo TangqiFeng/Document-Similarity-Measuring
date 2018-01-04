@@ -10,6 +10,8 @@ public class ShingleRequestPara {
     private Set in_set;
     private Set out_set;
     private int k;
+    private Document doc;
+    private ShingleDatabase db;
 
     public ShingleRequestPara() {
     }
@@ -60,5 +62,21 @@ public class ShingleRequestPara {
 
     public void setK(int k) {
         this.k = k;
+    }
+
+    public Document getDoc() {
+        return doc;
+    }
+
+    public void setDoc(Document doc) {
+        this.doc = doc;
+    }
+
+    public ShingleDatabase getDb() {
+        return db;
+    }
+
+    public void setDb(ShingleDatabase db) {
+        this.db = db;
     }
 }

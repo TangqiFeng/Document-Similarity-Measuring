@@ -37,7 +37,7 @@ public class DB4OShingleDatabase implements ShingleDatabase {
 		*/
 
         //Open a local database. Use Db4o.openServer(config, server, port) for full client / server
-        db = Db4oEmbedded.openFile(config, "customers.data");
+        db = Db4oEmbedded.openFile(config, dataPath);
     }
 
     @Override

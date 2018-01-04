@@ -219,7 +219,7 @@ public class ServiceHandler extends HttpServlet {
         Set in_set = new TreeSet();
         job.getShingles().forEach((s)->in_set.add(s.getHashcode()));
         para.setIn_set(in_set);
-        para.setOut_set(getShinglesFromDB());
+        para.setOut_set(getShinglesFromDB(job.getDocTitle(),job.getShingles()));
         // create getJaccardValue requests
         ShingleRequest r1 = new ShingleRequest(ShingleRequest.getJaccardValue);
         // handle requests
@@ -242,7 +242,7 @@ public class ServiceHandler extends HttpServlet {
         Map map = MapStore.getMap();
         para.setIn_set((Set) map.get(UPLOAD_FILE_DOC_ID));
         // call consumer to get min hash set for files in DB
-        BlockingQueue<Shingle> bq = (BlockingQueue<Shingle>) getShinglesFromDB();
+        BlockingQueue<Shingle> bq = (BlockingQueue<Shingle>) getShinglesFromDB(job.getDocTitle(),job.getShingles());
         int documentID = 1;
         new Consumer(bq, MINHASH_NUMBER, CONSUMER_THREAD_POOL_SIZE, documentID);
         para.setOut_set((Set) map.get(documentID));
@@ -266,10 +266,19 @@ public class ServiceHandler extends HttpServlet {
         out_queue.put(job.getTaskNumber(),job.getResult());
     }
 
-    private Set getShinglesFromDB(){
-        ShingleDatabase db = new DB4OShingleDatabase(DATABASE_PATH);
-        ArrayList<Document> docs = db.getAll();
-        // at this moment skip DB stuff
+    private Set getShinglesFromDB(String docTitle, ArrayList<Shingle> shingles) throws Exception {
+        ArrayList<Integer> shingleList = new ArrayList<>();
+        shingles.forEach((s)->{
+            shingleList.add(s.getHashcode());
+        });
+        Document document = new Document(shingleList,docTitle);
+        para.setDoc(document);
+        // create getShinglesFromDB requests
+        para.setDb(new DB4OShingleDatabase(DATABASE_PATH));
+        ShingleRequest r1 = new ShingleRequest(ShingleRequest.getShinglesFromDB);
+        // handle requests
+        ArrayList<Document> docs = (ArrayList<Document>) h.handleShingle(r1,para);
+        // get Set of upload doc shingles
         Set set = new TreeSet();
         docs.forEach((doc)->{
             for (int shingle: doc.getShingles()) {
