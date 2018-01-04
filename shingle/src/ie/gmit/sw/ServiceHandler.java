@@ -29,6 +29,8 @@ public class ServiceHandler extends HttpServlet {
     private static int INQUEUE_SIZE; // in_queue size defined in web.xml
     private static int MINHASH_NUMBER; // min hash number defined in web.xml
     private static int CONSUMER_THREAD_POOL_SIZE; // consumer thread pool size defined in web.xml
+    private static int UPLOAD_FILE_DOC_ID; // upload file default doc id defined in web.xml
+    private static int K_VALUE; // size K for MinHash function defined in web.xml
 
     //bolocking queue, used to store in-queue
     private BlockingQueue<Job> in_queue;
@@ -56,8 +58,9 @@ public class ServiceHandler extends HttpServlet {
         INQUEUE_SIZE = Integer.parseInt(ctx.getInitParameter("INQUEUE_SIZE"));
         MINHASH_NUMBER = Integer.parseInt(ctx.getInitParameter("MINHASH_NUMBER"));
         CONSUMER_THREAD_POOL_SIZE = Integer.parseInt(ctx.getInitParameter("CONSUMER_THREAD_POOL_SIZE"));
+        UPLOAD_FILE_DOC_ID = Integer.parseInt(ctx.getInitParameter("UPLOAD_FILE_DOC_ID"));
+        K_VALUE = Integer.parseInt(ctx.getInitParameter("K_VALUE"));
         in_queue = new LinkedBlockingDeque<Job>(INQUEUE_SIZE);
-
     }
 
 
@@ -122,7 +125,7 @@ public class ServiceHandler extends HttpServlet {
             //get shingles from StringBuffer and save to job.
             //if want use MinHash function,
             //here, should use
-            //job.setShingles(getShinglesBlockingQueue(buffer));
+            //job.setBlockingQueueShingles(getShinglesBlockingQueue(buffer));
             job.setShingles(getShinglesArrayList(buffer));
             //Add job to in-queue
             in_queue.put(job);
@@ -222,6 +225,35 @@ public class ServiceHandler extends HttpServlet {
         // add to out queue
         addOutQueue(job);
     }
+
+    /*
+     take a job from in queue, calculate jaccardValue using min hash function,
+     and add to out queue when finished
+    */
+    private void calculateByMinHash() throws Exception {
+        //take job from in queue
+        Job job = in_queue.take();
+        Set in_set = new TreeSet();
+        // call consumer to get min hash set for uploaded file
+        new Consumer(job.getBlockingQueueShingles(),MINHASH_NUMBER,CONSUMER_THREAD_POOL_SIZE,UPLOAD_FILE_DOC_ID);
+        Map map = MapStore.getMap();
+        para.setIn_set((Set) map.get(UPLOAD_FILE_DOC_ID));
+        // call consumer to get min hash set for files in DB
+        BlockingQueue<Shingle> bq = (BlockingQueue<Shingle>) getShinglesFromDB();
+        int documentID = 1;
+        new Consumer(bq, MINHASH_NUMBER, CONSUMER_THREAD_POOL_SIZE, documentID);
+        para.setOut_set((Set) map.get(documentID));
+        // create getJaccardValue requests
+        ShingleRequest r1 = new ShingleRequest(ShingleRequest.getJaccardValueByMinhash);
+        // handle requests
+        para.setK(K_VALUE);
+        Double jaccardValue = (Double) h.handleShingle(r1,para);
+        job.setResult(jaccardValue);
+        // add to out queue
+        addOutQueue(job);
+    }
+
+
 
     /*
      add fiinished job to out_queue

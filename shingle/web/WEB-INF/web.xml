@@ -40,6 +40,18 @@
     <param-value>50</param-value>
   </context-param>
 
+  <!--for the upload file, set it's default id => 0 -->
+  <context-param>
+    <param-name>UPLOAD_FILE_DOC_ID</param-name>
+    <param-value>0</param-value>
+  </context-param>
+
+  <!--size K for MinHash function -->
+  <context-param>
+    <param-name>K_VALUE</param-name>
+    <param-value>30</param-value>
+  </context-param>
+
   <!-- A servlet class must be bound to a name -->
   <servlet>
     <servlet-name>service-request-handler</servlet-name>
