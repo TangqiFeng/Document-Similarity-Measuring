@@ -9,6 +9,7 @@ public class ShingleRequestPara {
     private StringBuffer sb;
     private Set in_set;
     private Set out_set;
+    private int k;
 
     public ShingleRequestPara() {
     }
@@ -51,5 +52,13 @@ public class ShingleRequestPara {
 
     public void setOut_set(Set out_set) {
         this.out_set = out_set;
+    }
+
+    public int getK() {
+        return k;
+    }
+
+    public void setK(int k) {
+        this.k = k;
     }
 }

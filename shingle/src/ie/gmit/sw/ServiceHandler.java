@@ -27,6 +27,8 @@ public class ServiceHandler extends HttpServlet {
     private static long jobNumber = 0; // default job number
     private static int SHINGLE_SIZE; // shingle size defined in web.xml
     private static int INQUEUE_SIZE; // in_queue size defined in web.xml
+    private static int MINHASH_NUMBER; // min hash number defined in web.xml
+    private static int CONSUMER_THREAD_POOL_SIZE; // consumer thread pool size defined in web.xml
 
     //bolocking queue, used to store in-queue
     private BlockingQueue<Job> in_queue;
@@ -52,6 +54,8 @@ public class ServiceHandler extends HttpServlet {
         environmentalVariable = ctx.getInitParameter("SOME_GLOBAL_OR_ENVIRONMENTAL_VARIABLE");
         SHINGLE_SIZE = Integer.parseInt(ctx.getInitParameter("SHINGLE_SIZE"));
         INQUEUE_SIZE = Integer.parseInt(ctx.getInitParameter("INQUEUE_SIZE"));
+        MINHASH_NUMBER = Integer.parseInt(ctx.getInitParameter("MINHASH_NUMBER"));
+        CONSUMER_THREAD_POOL_SIZE = Integer.parseInt(ctx.getInitParameter("CONSUMER_THREAD_POOL_SIZE"));
         in_queue = new LinkedBlockingDeque<Job>(INQUEUE_SIZE);
 
     }
@@ -115,13 +119,20 @@ public class ServiceHandler extends HttpServlet {
         }
         out.print(buffer.toString()); // print txt content
         try {
-            // get shingles from StringBuffer and save to job
-            job.setShingles(getShingles(buffer));
+            //get shingles from StringBuffer and save to job.
+            //if want use MinHash function,
+            //here, should use
+            //job.setShingles(getShinglesBlockingQueue(buffer));
+            job.setShingles(getShinglesArrayList(buffer));
             //Add job to in-queue
             in_queue.put(job);
             // lambda expression to start a thread
             new Thread(() -> {
                 try {
+                    //calculate similarity use default formular.
+                    //if want use MinHash function,
+                    //here, should use
+                    //calculateByMinHash();
                     calculate();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -179,7 +190,7 @@ public class ServiceHandler extends HttpServlet {
     /*
      get shingles from StringBuffer, return a arrayList<Shingle>
       */
-    private ArrayList<Shingle> getShingles(StringBuffer buffer) throws Exception {
+    private ArrayList<Shingle> getShinglesArrayList(StringBuffer buffer) throws Exception {
         para.setStringBuffer(buffer);
         para.setShingleSize(SHINGLE_SIZE);
         // create getEngWords and getShingleBlockingQueue requests
@@ -193,7 +204,8 @@ public class ServiceHandler extends HttpServlet {
     }
 
     /*
-     take a job from in queue, calculate it, add to out queue when finished
+     take a job from in queue, calculate jaccardValue using formula,
+     and add to out queue when finished
      */
     private void calculate() throws Exception {
         //take job from in queue
@@ -211,6 +223,9 @@ public class ServiceHandler extends HttpServlet {
         addOutQueue(job);
     }
 
+    /*
+     add fiinished job to out_queue
+     */
     private void addOutQueue(Job job)
     {
         out_queue.put(job.getTaskNumber(),job.getResult());
@@ -229,14 +244,14 @@ public class ServiceHandler extends HttpServlet {
     /*
      static method, can by called by ServicePollHandler to check jobs in out queue
      */
-    protected static Map<String,Double> getOutQueue(){
+    public static Map<String,Double> getOutQueue(){
         return out_queue;
     }
 
     /*
      static method, can by called by ServicePollHandler to remove jobs from out queue
       */
-    protected static void removeOutQueue(String key){
+    public static void removeOutQueue(String key){
         out_queue.remove(key);
     }
 }
