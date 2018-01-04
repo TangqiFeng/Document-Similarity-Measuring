@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * this class is used to get document's MinHash codes.
@@ -44,26 +41,33 @@ public class Consumer implements Runnable {
 
     @Override
     public void run() {
-        Shingle next = new Shingle();
+        ArrayList<Integer> hashs = new ArrayList<>(minhashNumber);
+        hashs.forEach((h)->hashs.set(h,Integer.MAX_VALUE));
+        while(queue.size()>0){
+            Shingle next = new Shingle();
+            try {
+                next= queue.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Shingle finalNext = next;
+            pool.execute(new Runnable() {
+                public void run() {
+                    for (int i = 0; i < minhashNumber; i++) {
+                        int value = finalNext.getHashcode() ^ minHashs[i];
+                        if (value > hashs.get(i)) {
+                            hashs.set(i, value);
+                        }
+                    }
+                }
+            });
+        }
         try {
-            next= queue.take();
+            pool.awaitTermination(10, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Shingle finalNext = next;
-        pool.execute(new Runnable() {
-            ArrayList<Integer> hashs = new ArrayList<>(minhashNumber);
-            public void run() {
-                hashs.forEach((h)->hashs.set(h,Integer.MAX_VALUE));
-                for (int i = 0; i < minhashNumber; i++) {
-                    int value = finalNext.getHashcode() ^ minHashs[i];
-                    if (value > hashs.get(i)) {
-                        hashs.set(i, value);
-                    }
-                }
-                MapStore.putMap(docId,hashs);
-            }
-        });
+        MapStore.putMap(docId,hashs);
     }
 
 }

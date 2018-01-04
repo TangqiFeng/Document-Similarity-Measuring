@@ -243,8 +243,9 @@ public class ServiceHandler extends HttpServlet {
         para.setIn_set((Set) map.get(UPLOAD_FILE_DOC_ID));
         // call consumer to get min hash set for files in DB
         BlockingQueue<Shingle> bq = (BlockingQueue<Shingle>) getShinglesFromDB(job.getDocTitle(),job.getShingles());
+        // document here as a parameter used for Consumer calculate min hash set, and save to map
         int documentID = 1;
-        new Consumer(bq, MINHASH_NUMBER, CONSUMER_THREAD_POOL_SIZE, documentID);
+        new Consumer(bq, MINHASH_NUMBER, CONSUMER_THREAD_POOL_SIZE, documentID++);
         para.setOut_set((Set) map.get(documentID));
         // create getJaccardValue requests
         ShingleRequest r1 = new ShingleRequest(ShingleRequest.getJaccardValueByMinhash);
