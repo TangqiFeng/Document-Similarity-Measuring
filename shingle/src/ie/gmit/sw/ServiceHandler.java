@@ -31,6 +31,8 @@ public class ServiceHandler extends HttpServlet {
     private static int CONSUMER_THREAD_POOL_SIZE; // consumer thread pool size defined in web.xml
     private static int UPLOAD_FILE_DOC_ID; // upload file default doc id defined in web.xml
     private static int K_VALUE; // size K for MinHash function defined in web.xml
+    private static String DATABASE_PATH; // database path defined in web.xml
+
 
     //bolocking queue, used to store in-queue
     private BlockingQueue<Job> in_queue;
@@ -60,6 +62,7 @@ public class ServiceHandler extends HttpServlet {
         CONSUMER_THREAD_POOL_SIZE = Integer.parseInt(ctx.getInitParameter("CONSUMER_THREAD_POOL_SIZE"));
         UPLOAD_FILE_DOC_ID = Integer.parseInt(ctx.getInitParameter("UPLOAD_FILE_DOC_ID"));
         K_VALUE = Integer.parseInt(ctx.getInitParameter("K_VALUE"));
+        DATABASE_PATH = ctx.getInitParameter("DATABASE_PATH");
         in_queue = new LinkedBlockingDeque<Job>(INQUEUE_SIZE);
     }
 
@@ -264,12 +267,19 @@ public class ServiceHandler extends HttpServlet {
     }
 
     private Set getShinglesFromDB(){
+        ShingleDatabase db = new DB4OShingleDatabase(DATABASE_PATH);
+        ArrayList<Document> docs = db.getAll();
         // at this moment skip DB stuff
         Set set = new TreeSet();
-        set.add(-761363859);
-        set.add(1650764646);
-        set.add(239957193);
-        set.add(110251550);
+        docs.forEach((doc)->{
+            for (int shingle: doc.getShingles()) {
+                set.add(shingle);
+            }
+        });
+//        set.add(-761363859);
+//        set.add(1650764646);
+//        set.add(239957193);
+//        set.add(110251550);
         return set;
     }
 

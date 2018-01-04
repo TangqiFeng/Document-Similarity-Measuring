@@ -17,10 +17,12 @@ public class PreShingleHandler implements ShingleHandler {
             // e.g. getChineseWords, getJapanWords etc.
 
             case ShingleRequest.getShingleArrayList:
+            case ShingleRequest.getShingleBlockingQueue:
                 return new GenerateShingleHandler().handleShingle(shingleRequest, para);
                 //break;
 
             case ShingleRequest.getJaccardValue:
+            case ShingleRequest.getJaccardValueByMinhash:
                 return new CompareShingleHandler().handleShingle(shingleRequest, para);
         }
         return null;

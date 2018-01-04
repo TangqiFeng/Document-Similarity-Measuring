@@ -52,6 +52,11 @@
     <param-value>30</param-value>
   </context-param>
 
+  <context-param>
+    <param-name>DATABASE_PATH</param-name>
+    <param-value>/</param-value>
+  </context-param>
+
   <!-- A servlet class must be bound to a name -->
   <servlet>
     <servlet-name>service-request-handler</servlet-name>
