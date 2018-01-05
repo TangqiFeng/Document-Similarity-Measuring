@@ -3,9 +3,18 @@ package ie.gmit.sw;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+/**
+ * implement ShingleHandler
+ * have a private method to return words string[] from bufferReader
+ * based "The chain of responsibility design pattern"
+ * this class act the start of the chain, which means all request for handlers indicates through this class
+ */
 public class PreShingleHandler implements ShingleHandler {
 
-    @Override
+    /*
+     * override the handleShingle method
+     * use switch statement to redirect request to correct handler
+     */
     public Object handleShingle(ShingleRequest shingleRequest, ShingleRequestPara para) throws Exception {
         // implement further chaining if required doRequest();
         // e.g. return List<Shingle> etc.
@@ -28,7 +37,9 @@ public class PreShingleHandler implements ShingleHandler {
         return null;
     }
 
-    // get words string[] from bufferReader
+    /*
+     * get words string[] from bufferReader
+     */
     private String getEngWords(StringBuffer sb) throws IOException {
         // store all words to a string array
         // use regex to get words, and store in a String array

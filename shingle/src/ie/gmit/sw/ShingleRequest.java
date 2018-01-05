@@ -1,5 +1,11 @@
 package ie.gmit.sw;
 
+/**
+ * This is the bean class,
+ * includes all command or valid method of ShingleHandler
+ * This class act as parameter to call different methods defined in ShingleHandlers
+ * a part of "The chain of responsibility design pattern" component
+ * */
 public class ShingleRequest {
     public final static int getEngWords = 0;
     public final static int getShingleArrayList = 10;
@@ -13,7 +19,7 @@ public class ShingleRequest {
                 || (type == getJaccardValueByMinhash)) {
             this.type = type; } else {
             throw new Exception("Illegal Request creation with unknown type"); }
-    }
+        }
     public int getType() { return type;
     }
 }

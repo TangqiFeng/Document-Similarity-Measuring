@@ -1,8 +1,12 @@
 package ie.gmit.sw;
 
-import java.io.BufferedReader;
 import java.util.Set;
 
+/**
+ * This is the bean class,
+ * includes all necessary parameter attributes for calling methods of ShingleHandler
+ * This class act as parameter to call different methods defined in ShingleHandlers
+ * */
 public class ShingleRequestPara {
     private String[] words;
     private int shingleSize;

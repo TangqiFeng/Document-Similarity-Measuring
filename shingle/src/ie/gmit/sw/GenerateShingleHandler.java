@@ -4,9 +4,18 @@ import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+/**
+ * implement ShingleHandler
+ * have methods to return ArrayList/BlockingQueue etc. Shingles with parameter String[]
+ * based "The chain of responsibility design pattern"
+ * it is able to direct to more functions ...
+ * */
 public class GenerateShingleHandler implements ShingleHandler {
-
-    @Override
+    /*
+     * override the handleShingle method
+     * use switch statement to choose correct method
+     * e.g. getShingleArrayList, getShingleBlockingQueue
+     */
     public Object handleShingle(ShingleRequest shingleRequest, ShingleRequestPara para) throws Exception {
         switch (shingleRequest.getType()) {
             // could have more cases here
@@ -78,8 +87,5 @@ public class GenerateShingleHandler implements ShingleHandler {
             shingles.put(s);
         }
         return shingles;
-
     }
-
-
 }

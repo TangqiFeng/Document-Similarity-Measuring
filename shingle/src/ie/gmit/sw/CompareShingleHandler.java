@@ -3,8 +3,18 @@ package ie.gmit.sw;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * implement ShingleHandler
+ * have methods(default formula, minhash etc.) to return Jaccard result
+ * based "The chain of responsibility design pattern"
+ * it is able to direct to more functions ...
+ * */
 public class CompareShingleHandler implements ShingleHandler {
-    @Override
+    /*
+     * override the handleShingle method
+     * use switch statement to choose correct method
+     * e.g. getJaccardValue, getJaccardValueByMinhash
+     */
     public Object handleShingle(ShingleRequest shingleRequest, ShingleRequestPara para) throws Exception {
         switch (shingleRequest.getType()) {
             // could have more cases here
@@ -20,7 +30,7 @@ public class CompareShingleHandler implements ShingleHandler {
     }
 
     /*
-     this method calculate Jaccard Similarity using formula
+     * this method calculate Jaccard Similarity using formula
      */
     private Double getJaccardValueByFomular(Set in_set, Set db_set){
         Set n = new TreeSet(in_set);
@@ -31,7 +41,7 @@ public class CompareShingleHandler implements ShingleHandler {
     }
 
     /*
-     this method calculate Jaccard Similarity using MinHash function
+     * this method calculate Jaccard Similarity using MinHash function
      */
     private Double getJaccardValueByMinHash(Set in_set, Set db_set, int k){
         Set n = new TreeSet(in_set);
