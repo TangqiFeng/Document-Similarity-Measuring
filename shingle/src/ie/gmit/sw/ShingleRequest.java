@@ -1,13 +1,13 @@
 package ie.gmit.sw;
 
 /**
- * @author Tangqi Feng
- * @version 1.0
- *
  * This is the bean class,
  * includes all command or valid method of ShingleHandler
  * This class act as parameter to call different methods defined in ShingleHandlers
  * a part of "The chain of responsibility design pattern" component
+ *
+ * @author Tangqi Feng
+ * @version 1.0
  * */
 public class ShingleRequest {
     public final static int getEngWords = 0;

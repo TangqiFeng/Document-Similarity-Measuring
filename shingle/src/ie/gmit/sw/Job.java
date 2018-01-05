@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * @author Tangqi Feng
- * @version 1.0
- *
  * This is the bean class,
  * store a job object, used to identify multi requests from clients
+ *
+ * @author Tangqi Feng
+ * @version 1.0
  */
 public class Job {
     private String taskNumber;

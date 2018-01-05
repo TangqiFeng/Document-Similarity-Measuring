@@ -3,11 +3,12 @@ package ie.gmit.sw;
 import java.util.ArrayList;
 
 /**
+ * This is the bean class,
+ * store a document object
+ *
  * @author Tangqi Feng
  * @version 1.0
  *
- * This is the bean class,
- * store a document object
  */
 public class Document {
     private ArrayList<Integer> shingles;

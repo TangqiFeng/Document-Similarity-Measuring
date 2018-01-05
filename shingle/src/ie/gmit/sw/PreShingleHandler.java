@@ -4,13 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
- * @author Tangqi Feng
- * @version 1.0
- *
  * implement ShingleHandler
  * have a private method to return words string[] from bufferReader
  * based "The chain of responsibility design pattern"
  * this class act the start of the chain, which means all request for handlers indicates through this class
+ *
+ * @author Tangqi Feng
+ * @version 1.0
  */
 public class PreShingleHandler implements ShingleHandler {
 

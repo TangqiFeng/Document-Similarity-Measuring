@@ -7,12 +7,14 @@ import java.util.Random;
 import java.util.concurrent.*;
 
 /**
- * @author Tangqi Feng
- * @version 1.0
  *
  * this class is used to get document's MinHash codes.
  * contains threadPool to calculate min hashs,
  * and put the resust to the map stored in Class "MapStore"
+ *
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  */
 public class Consumer implements Runnable {
     private BlockingQueue<Shingle> queue;
@@ -86,11 +88,11 @@ public class Consumer implements Runnable {
 
 
 /**
- * @author Tangqi Feng
- * @version 1.0
- *
  * this class is used to store documents' MinHash codes.
  * used for calculate jaccard similarity with min-hash functions
+ *
+ * @author Tangqi Feng
+ * @version 1.0
  */
 class MapStore{
     protected static ConcurrentHashMap<Integer,List<Integer>> map =  new ConcurrentHashMap<>();

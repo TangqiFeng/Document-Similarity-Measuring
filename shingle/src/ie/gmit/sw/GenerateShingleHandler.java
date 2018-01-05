@@ -5,13 +5,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
- * @author Tangqi Feng
- * @version 1.0
- *
  * implement ShingleHandler
  * have methods to return ArrayList/BlockingQueue etc. Shingles with parameter String[]
  * based "The chain of responsibility design pattern"
  * it is able to direct to more functions ...
+ *
+ * @author Tangqi Feng
+ * @version 1.0
  * */
 public class GenerateShingleHandler implements ShingleHandler {
     /**

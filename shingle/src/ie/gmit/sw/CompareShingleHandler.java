@@ -4,13 +4,15 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * @author Tangqi Feng
- * @version 1.0
  *
  * implement ShingleHandler
  * have methods(default formula, minhash etc.) to return Jaccard result
  * based "The chain of responsibility design pattern"
  * it is able to direct to more functions ...
+ *
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  * */
 public class CompareShingleHandler implements ShingleHandler {
     /**

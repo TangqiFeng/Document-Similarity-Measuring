@@ -19,15 +19,15 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 
 /**
- * @author Tangqi Feng
- * @version 1.0
- *
  * this class handle the main request from web client,
  * handle job in-Queue and out-Queue
  * take jobs from in-Queue, put in out-Queue when finished
  *
  * NB: You will need to add the JAR file $TOMCAT_HOME/lib/servlet-api.jar to your CLASSPATH
  *     variable in order to compile a servlet from a command line.
+ *
+ * @author Tangqi Feng
+ * @version 1.0
  */
 @WebServlet("/UploadServlet")
 @MultipartConfig(fileSizeThreshold=1024*1024*2, // 2MB. The file size in bytes after which the file will be temporarily stored on disk. The default size is 0 bytes.
