@@ -1,9 +1,11 @@
 package ie.gmit.sw;
 
-import com.db4o.reflect.generic.GenericObject;
-
 import java.util.ArrayList;
 
+/**
+ * This is the bean class,
+ * store a document object
+ */
 public class Document {
     private ArrayList<Integer> shingles;
     private int docId;

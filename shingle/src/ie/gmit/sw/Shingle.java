@@ -1,5 +1,9 @@
 package ie.gmit.sw;
 
+/**
+ * This is the bean class,
+ * store a single shingle
+ */
 public class Shingle {
     private int docId;
     private int hashcode;

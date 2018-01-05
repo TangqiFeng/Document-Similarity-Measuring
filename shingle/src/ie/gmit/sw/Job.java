@@ -3,8 +3,9 @@ package ie.gmit.sw;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
-/*
-this is the bean class, stores job object
+/**
+ * This is the bean class,
+ * store a job object, used to identify multi requests from clients
  */
 public class Job {
     private String taskNumber;
