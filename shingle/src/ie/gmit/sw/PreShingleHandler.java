@@ -24,10 +24,6 @@ public class PreShingleHandler implements ShingleHandler {
             case ShingleRequest.getJaccardValue:
             case ShingleRequest.getJaccardValueByMinhash:
                 return new CompareShingleHandler().handleShingle(shingleRequest, para);
-
-            case ShingleRequest.getShinglesFromDB:
-            case ShingleRequest.saveShinglesToDB:
-                return new ShingleDBHandler(para.getDb()).handleShingle(shingleRequest,para);
         }
         return null;
     }

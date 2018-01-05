@@ -1,5 +1,7 @@
 package ie.gmit.sw;
 
+import com.db4o.reflect.generic.GenericObject;
+
 import java.util.ArrayList;
 
 public class Document {

@@ -1,5 +1,14 @@
 package ie.gmit.sw;
 
+import com.db4o.Db4oEmbedded;
+import com.db4o.ObjectContainer;
+import com.db4o.ObjectSet;
+import com.db4o.config.EmbeddedConfiguration;
+import com.db4o.ta.TransparentActivationSupport;
+import com.db4o.ta.TransparentPersistenceSupport;
+import xtea_db4o.XTEA;
+import xtea_db4o.XTeaEncryptionStorage;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -44,6 +53,8 @@ public class ServiceHandler extends HttpServlet {
     // create handler
     ShingleHandler h = new PreShingleHandler();
 
+    private ObjectContainer db = null;
+
 
     /* This method is only called once, when the servlet is first started (like a constructor).
      * It's the Template Patten in action! Any application-wide variables should be initialised
@@ -64,6 +75,29 @@ public class ServiceHandler extends HttpServlet {
         K_VALUE = Integer.parseInt(ctx.getInitParameter("K_VALUE"));
         DATABASE_PATH = ctx.getInitParameter("DATABASE_PATH");
         in_queue = new LinkedBlockingDeque<Job>(INQUEUE_SIZE);
+
+
+        EmbeddedConfiguration config = Db4oEmbedded.newConfiguration();
+        config.common().add(new TransparentActivationSupport()); //Real lazy. Saves all the config commented out below
+        config.common().add(new TransparentPersistenceSupport()); //Lazier still. Saves all the config commented out below
+        config.common().updateDepth(7); //Propagate updates
+
+        //Use the XTea lib for encryption. The basic Db4O container only has a Caesar cypher... Dicas quod non est ita!
+        config.file().storage(new XTeaEncryptionStorage("password", XTEA.ITERATIONS64));
+
+		/*
+		config.common().objectClass(Patient.class).cascadeOnUpdate(true);
+		config.common().objectClass(Patient.class).cascadeOnActivate(true);
+		config.common().objectClass(MDTReview.class).cascadeOnUpdate(true);
+		config.common().objectClass(MDTReview.class).cascadeOnActivate(true);
+		config.common().objectClass(User.class).cascadeOnUpdate(true);
+		config.common().objectClass(HospitalList.class).cascadeOnUpdate(true);
+		config.common().objectClass(TumourSet.class).cascadeOnUpdate(true);
+		config.common().objectClass(GPLetter.class).cascadeOnUpdate(true);
+		*/
+
+        //Open a local database. Use Db4o.openServer(config, server, port) for full client / server
+        db = Db4oEmbedded.openFile(config, DATABASE_PATH);
     }
 
 
@@ -273,12 +307,7 @@ public class ServiceHandler extends HttpServlet {
             shingleList.add(s.getHashcode());
         });
         Document document = new Document(shingleList,docTitle);
-        para.setDoc(document);
-        // create getShinglesFromDB requests
-        para.setDb(new DB4OShingleDatabase(DATABASE_PATH));
-        ShingleRequest r1 = new ShingleRequest(ShingleRequest.getShinglesFromDB);
-        // handle requests
-        ArrayList<Document> docs = (ArrayList<Document>) h.handleShingle(r1,para);
+        ObjectSet<Document> docs = db.query(Document.class);
         // get Set of upload doc shingles
         Set set = new TreeSet();
         docs.forEach((doc)->{
@@ -286,10 +315,8 @@ public class ServiceHandler extends HttpServlet {
                 set.add(shingle);
             }
         });
-//        set.add(-761363859);
-//        set.add(1650764646);
-//        set.add(239957193);
-//        set.add(110251550);
+        // after receiving docs, save this uploaded doc to database
+        db.store(document);
         return set;
     }
 
