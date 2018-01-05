@@ -1,6 +1,9 @@
 package ie.gmit.sw;
 
 /**
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  * This is the bean class,
  * includes all command or valid method of ShingleHandler
  * This class act as parameter to call different methods defined in ShingleHandlers

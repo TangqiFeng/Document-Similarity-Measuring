@@ -3,6 +3,9 @@ package ie.gmit.sw;
 import java.util.Set;
 
 /**
+ * @author Tangqi Feng
+ * @version 1.0
+ * 
  * This is the bean class,
  * includes all necessary parameter attributes for calling methods of ShingleHandler
  * This class act as parameter to call different methods defined in ShingleHandlers

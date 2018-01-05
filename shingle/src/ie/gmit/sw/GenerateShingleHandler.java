@@ -5,16 +5,22 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  * implement ShingleHandler
  * have methods to return ArrayList/BlockingQueue etc. Shingles with parameter String[]
  * based "The chain of responsibility design pattern"
  * it is able to direct to more functions ...
  * */
 public class GenerateShingleHandler implements ShingleHandler {
-    /*
+    /**
      * override the handleShingle method
      * use switch statement to choose correct method
      * e.g. getShingleArrayList, getShingleBlockingQueue
+     *
+     * @param shingleRequest shingle commands
+     * @param para required parameters
      */
     public Object handleShingle(ShingleRequest shingleRequest, ShingleRequestPara para) throws Exception {
         switch (shingleRequest.getType()) {
@@ -30,7 +36,7 @@ public class GenerateShingleHandler implements ShingleHandler {
         return null;
     }
 
-    /*
+    /**
      return shingle arrayList,
      e.g. for Jaccard Similarity calculating by formula
      */
@@ -60,7 +66,7 @@ public class GenerateShingleHandler implements ShingleHandler {
 
     }
 
-    /*
+    /**
      return shingle arrayList,
      e.g. for Jaccard Similarity calculating by MinHash function
      */

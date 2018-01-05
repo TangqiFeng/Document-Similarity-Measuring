@@ -3,6 +3,9 @@ package ie.gmit.sw;
 import java.util.ArrayList;
 
 /**
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  * This is the bean class,
  * store a document object
  */

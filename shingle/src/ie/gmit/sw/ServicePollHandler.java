@@ -6,6 +6,9 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 /**
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  * this class handle the result check request from web client,
  * get job out-Queue from ServiceHandler
  * check request job is/not in the out-Queue, if yes, take out from out-Queue

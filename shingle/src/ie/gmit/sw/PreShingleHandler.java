@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  * implement ShingleHandler
  * have a private method to return words string[] from bufferReader
  * based "The chain of responsibility design pattern"
@@ -11,9 +14,12 @@ import java.io.IOException;
  */
 public class PreShingleHandler implements ShingleHandler {
 
-    /*
+    /**
      * override the handleShingle method
      * use switch statement to redirect request to correct handler
+     *
+     * @param shingleRequest shingle commands
+     * @param para required parameters
      */
     public Object handleShingle(ShingleRequest shingleRequest, ShingleRequestPara para) throws Exception {
         // implement further chaining if required doRequest();
@@ -37,7 +43,7 @@ public class PreShingleHandler implements ShingleHandler {
         return null;
     }
 
-    /*
+    /**
      * get words string[] from bufferReader
      */
     private String getEngWords(StringBuffer sb) throws IOException {

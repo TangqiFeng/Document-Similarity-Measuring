@@ -19,6 +19,9 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 
 /**
+ * @author Tangqi Feng
+ * @version 1.0
+ *
  * this class handle the main request from web client,
  * handle job in-Queue and out-Queue
  * take jobs from in-Queue, put in out-Queue when finished
@@ -59,7 +62,8 @@ public class ServiceHandler extends HttpServlet {
     private ObjectContainer db = null;
 
 
-    /* This method is only called once, when the servlet is first started (like a constructor).
+    /**
+     * This method is only called once, when the servlet is first started (like a constructor).
      * It's the Template Patten in action! Any application-wide variables should be initialised
      * here. Note that if you set the xml element <load-on-startup>1</load-on-startup>, this
      * method will be automatically fired by Tomcat when the web server itself is started.
@@ -82,7 +86,8 @@ public class ServiceHandler extends HttpServlet {
     }
 
 
-    /* The doGet() method handles a HTTP GET request. Please note the following very carefully:
+    /**
+     *  The doGet() method handles a HTTP GET request. Please note the following very carefully:
      *   1) The doGet() method is executed in a separate thread. If you instantiate any objects
      *      inside this method and don't pass them around (ie. encapsulate them), they will be
      *      thread safe.
@@ -185,7 +190,7 @@ public class ServiceHandler extends HttpServlet {
         doGet(req, resp);
     }
 
-    /*
+    /**
      * get shingles with the StringBuffer, return an arrayList<Shingle>
      */
     private ArrayList<Shingle> getShinglesArrayList(StringBuffer buffer) throws Exception {
@@ -201,7 +206,7 @@ public class ServiceHandler extends HttpServlet {
         return  (ArrayList<Shingle>) h.handleShingle(r2,para);
     }
 
-    /*
+    /**
      * take a job from in queue, calculate jaccardValue using formula,
      * and add to out queue when finished
      */
@@ -221,7 +226,7 @@ public class ServiceHandler extends HttpServlet {
         addOutQueue(job);
     }
 
-    /*
+    /**
      * take a job from in queue, calculate jaccardValue using min hash function,
      * and add to out queue when finished
     */
@@ -249,7 +254,7 @@ public class ServiceHandler extends HttpServlet {
         addOutQueue(job);
     }
 
-    /*
+    /**
      * add fiinished job to out_queue
      */
     private void addOutQueue(Job job)
@@ -257,7 +262,7 @@ public class ServiceHandler extends HttpServlet {
         out_queue.put(job.getTaskNumber(),job.getResult());
     }
 
-    /*
+    /**
      * get document shingles from database,
      * and store current upload file to the database
      * return set of shingles(Integer).
@@ -286,21 +291,21 @@ public class ServiceHandler extends HttpServlet {
         return set;
     }
 
-    /*
+    /**
      * static method, can called by ServicePollHandler to check jobs in out queue
      */
     public static Map<String,Double> getOutQueue(){
         return out_queue;
     }
 
-    /*
+    /**
      * static method, can by called by ServicePollHandler to remove jobs from out queue
      */
     public static void removeOutQueue(String key){
         out_queue.remove(key);
     }
 
-    /*
+    /**
      * set up the database (BD4O)
      */
     private void setupDB(){
